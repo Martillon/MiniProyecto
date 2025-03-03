@@ -4,18 +4,19 @@ using UnityEngine.InputSystem;
 
 public class WeaponController : MonoBehaviour
 {
-    [Header("Configuración del Disparo")]
+    [Header("Shoot settings")]
     public Transform firePoint; // Point of origin of the shot
     public float fireRange = 100f; // Max shot distance
     public LayerMask hitMask; // Hit objects
     public float fireRate = 0.2f; // Time between shots
     public int damage = 10; // Damage per shot
-    public KeyCode shootKey = KeyCode.Mouse2;
+    public KeyCode shootKey = KeyCode.Mouse0;
     public KeyCode aimKey = KeyCode.Mouse1;
-    public float recoil = 1f; // Backwards force when shooting
-
-    private float nextFireTime = 0f;
+    public float spread = 0.02f; // Backwards force when shooting
+    public bool automatic = false;
+    
     private Camera mainCamera;
+    private bool canShoot = true;
 
     private void Start()
     {
@@ -24,19 +25,50 @@ public class WeaponController : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKey(shootKey) && Time.time >= nextFireTime)
+        
+        //Automatic shooting
+        
+        if (Input.GetKey(shootKey) && Input.GetKey(aimKey) && canShoot && automatic)
         {
+            spread = 0f;
             Shoot();
-            nextFireTime = Time.time + fireRate;
+            Invoke(nameof(ResetShoot), fireRate);
+        } 
+        else if(Input.GetKey(shootKey) && canShoot && automatic)
+        {
+            spread = 0.02f;
+            Shoot();
+            Invoke(nameof(ResetShoot), fireRate);
         }
+        
+        //Manual Shooting
+        
+        if (Input.GetKeyDown(shootKey) && Input.GetKey(aimKey) && canShoot && !automatic)
+        {
+            spread = 0f;
+            Shoot();
+            Invoke(nameof(ResetShoot), fireRate);
+        } 
+        else if(Input.GetKeyDown(shootKey) && canShoot && !automatic)
+        {
+            spread = 0.02f;
+            Shoot();
+            Invoke(nameof(ResetShoot), fireRate);
+        }
+        
     }
 
     void Shoot()
     {
         Ray ray = new Ray(mainCamera.transform.position, mainCamera.transform.forward);
+        
+        Vector3 direction = ray.direction;
+        direction.x += UnityEngine.Random.Range(-spread, spread);
+        direction.y += UnityEngine.Random.Range(-spread, spread);
+        
         RaycastHit hit;
 
-        if (Physics.Raycast(ray, out hit, fireRange, hitMask))
+        if (Physics.Raycast(ray.origin, direction, out hit, fireRange, hitMask))
         {
             Debug.Log("Impact: " + hit.collider.name);
 
@@ -51,6 +83,11 @@ public class WeaponController : MonoBehaviour
         }
 
         // Add VFX
+    }
+
+    public void ResetShoot()
+    {
+        canShoot = true;
     }
 
     public void OnDrawGizmos()

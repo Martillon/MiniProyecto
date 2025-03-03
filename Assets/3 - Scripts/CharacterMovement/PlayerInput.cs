@@ -30,6 +30,11 @@ namespace CharacterMovement
         [SerializeField] private LayerMask groundMask;
         private bool _isGrounded;
         
+        [Header("Weapons")]
+        [SerializeField] private GameObject rifle;
+        [SerializeField] private GameObject handgun;
+        [SerializeField] private KeyCode switchWeaponKey = KeyCode.Q;
+        
         [SerializeField] private Transform orientation;
         
         private Camera _playerCamera;
@@ -110,6 +115,20 @@ namespace CharacterMovement
 
                 Invoke(nameof(ResetDash), dashCooldown);
                 Invoke(nameof(ResetSpeedControl), 0.5f);
+            }
+            
+            if(Input.GetKeyDown(switchWeaponKey))
+            {
+                if (rifle.activeSelf)
+                {
+                    rifle.SetActive(false);
+                    handgun.SetActive(true);
+                }
+                else
+                {
+                    rifle.SetActive(true);
+                    handgun.SetActive(false);
+                }
             }
         }
 
