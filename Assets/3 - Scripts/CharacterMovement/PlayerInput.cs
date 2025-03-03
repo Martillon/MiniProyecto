@@ -12,7 +12,7 @@ namespace CharacterMovement
         
         [Header("Jumping")]
         [SerializeField] private float jumpForce = 5f;
-        [SerializeField] private float airMultiplier = 0.4f;
+        //[SerializeField] private float airMultiplier = 0.4f;
         [SerializeField] private float jumpCooldown = 2f;
         private bool _canJump = true;
         

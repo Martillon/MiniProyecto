@@ -24,7 +24,7 @@ public class WeaponController : MonoBehaviour
 
     void Update()
     {
-        if (Mouse.current.leftButton.isPressed && Time.time >= nextFireTime)
+        if (Input.GetKey(shootKey) && Time.time >= nextFireTime)
         {
             Shoot();
             nextFireTime = Time.time + fireRate;
@@ -33,35 +33,21 @@ public class WeaponController : MonoBehaviour
 
     void Shoot()
     {
-        // 1. From the camera, shoot a ray to the center of the screen
-        Ray ray = mainCamera.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2));
+        Ray ray = new Ray(mainCamera.transform.position, mainCamera.transform.forward);
         RaycastHit hit;
-        Vector3 targetPoint;
 
         if (Physics.Raycast(ray, out hit, fireRange, hitMask))
         {
-            targetPoint = hit.point; // Point of impact
-        }
-        else
-        {
-            targetPoint = ray.origin + ray.direction * fireRange; // Shoot to the end of the range
-        }
-
-        // 2. Now we shoot from the gun's fire point to the target point
-        Vector3 direction = (targetPoint - firePoint.position).normalized;
-
-        if (Physics.Raycast(firePoint.position, direction, out hit, fireRange, hitMask))
-        {
             Debug.Log("Impact: " + hit.collider.name);
 
-            // Apply damage to the enemy
+            // Apply Damage
             /*EnemyHealth enemy = hit.collider.GetComponent<EnemyHealth>();
             if (enemy != null)
             {
                 enemy.TakeDamage(damage);
             }*/
-
-            // Add SFX
+            
+            //Add sfx
         }
 
         // Add VFX
@@ -72,7 +58,7 @@ public class WeaponController : MonoBehaviour
         if (firePoint == null || mainCamera == null) return;
 
         // 1. Simulate shoot from camera to the center of the screen
-        Ray ray = mainCamera.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2));
+        Ray ray = new Ray(mainCamera.transform.position, mainCamera.transform.forward);
         Vector3 targetPoint;
 
         if (Physics.Raycast(ray, out RaycastHit hit, fireRange, hitMask))
@@ -85,10 +71,6 @@ public class WeaponController : MonoBehaviour
         {
             targetPoint = ray.origin + ray.direction * fireRange; // If nothing is hit, draw to the end of the range
         }
-
-        // 2. Draw the line from the gun's fire point to the target point
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawLine(firePoint.position, targetPoint);
 
         // 3. Ray from the camera to the target point
         Gizmos.color = Color.blue;

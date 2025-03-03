@@ -6,7 +6,7 @@ public class Aim : MonoBehaviour
 {
     [Header("Aim Settings")]
     [SerializeField] private KeyCode aimKey = KeyCode.Mouse1;
-    [SerializeField] private float aimSpeed = 0.1f;
+    //[SerializeField] private float aimSpeed = 0.1f;
     [SerializeField] private int priority = 10;
     
     private CinemachineCamera _aimCamera;
