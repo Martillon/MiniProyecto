@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class WeaponController : MonoBehaviour
+public class WeaponController : MonoBehaviour, IDealDamage
 {
     [Header("Shoot settings")]
     public Transform firePoint; // Point of origin of the shot
@@ -57,6 +57,11 @@ public class WeaponController : MonoBehaviour
         }
         
     }
+    
+    public int GetDamage()
+    {
+        return damage;
+    }
 
     void Shoot()
     {
@@ -72,12 +77,11 @@ public class WeaponController : MonoBehaviour
         {
             Debug.Log("Impact: " + hit.collider.name);
 
-            // Apply Damage
-            /*EnemyHealth enemy = hit.collider.GetComponent<EnemyHealth>();
-            if (enemy != null)
+            IDamageable damageable = hit.collider.GetComponent<IDamageable>();
+            if (damageable != null)
             {
-                enemy.TakeDamage(damage);
-            }*/
+                damageable.TakeDamage(GetDamage());
+            }
             
             //Add sfx
         }
