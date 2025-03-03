@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 namespace CharacterMovement
@@ -6,6 +5,7 @@ namespace CharacterMovement
     [RequireComponent(typeof(Rigidbody))]
     public class PlayerInput : MonoBehaviour
     {
+        #region Variables
         [Header("Movement")]
         [SerializeField] private float movementSpeed = 5f;
         [SerializeField] private float groundedDrag = 6f;
@@ -16,8 +16,14 @@ namespace CharacterMovement
         [SerializeField] private float jumpCooldown = 2f;
         private bool _canJump = true;
         
+        [Header("Dashing")]
+        [SerializeField] private float dashForce = 10f;
+        [SerializeField] private float dashCooldown = 2f;
+        private bool _canDash = true;
+        
         [Header("Keybindings")]
         [SerializeField] private KeyCode jumpKey = KeyCode.Space;
+        [SerializeField] private KeyCode dashKey = KeyCode.LeftShift;
         
         [Header("Ground Check")]
         [SerializeField] private float playerHeight;
@@ -31,10 +37,21 @@ namespace CharacterMovement
         private float _horizontal;
         private float _vertical;
         
+        private bool _speedControlActive = true;
+
+        private Quaternion _camRotation;
+        
         private Vector3 _moveDirection;
+        private Vector3 _forward;
+        private Vector3 _right;
+        private Vector3 _rbRotation;
 
         private Rigidbody _rb;
 
+        #endregion
+        
+        #region Updates & Start
+        
         private void Start()
         {
             _playerCamera = Camera.main;
@@ -43,84 +60,131 @@ namespace CharacterMovement
             _rb = GetComponent<Rigidbody>();
             _rb.freezeRotation = true;
         }
-
-        private void FixedUpdate()
-        {
-            MovePlayer();
-        }
         
         private void Update()
         {
-            _isGrounded = Physics.Raycast(transform.position, Vector3.down, playerHeight / 2 + 0.2f, groundMask);
-            
+            _isGrounded = Physics.Raycast(transform.position, Vector3.down, playerHeight * 0.5f + 0.2f, groundMask);
             MyInput();
-            SpeedControl();
-            AlignWithCamera();
+            RotationCam();
+            if (_speedControlActive) SpeedControl();
             
-            if(_isGrounded)
+            if (_isGrounded)
+            {
                 _rb.linearDamping = groundedDrag;
+            }
             else
+            {
                 _rb.linearDamping = 0;
+            }
         }
 
+        private void FixedUpdate()
+        {
+            MovePLayer();
+
+        }
+        
+        #endregion
+        
         private void MyInput()
         {
-            _horizontal = Input.GetAxis("Horizontal");
-            _vertical = Input.GetAxis("Vertical");
+            _horizontal = Input.GetAxisRaw("Horizontal");
+            _vertical = Input.GetAxisRaw("Vertical");
 
             if (Input.GetKey(jumpKey) && _canJump && _isGrounded)
             {
-                Debug.Log("Jump");
-                Jump(); 
                 _canJump = false;
+
+                Jump();
+
                 Invoke(nameof(ResetJump), jumpCooldown);
             }
+
+            if (Input.GetKey(dashKey) && _canDash)
+            {
+                _speedControlActive = false;
                 
+                _canDash = false;
+
+                Dash();
+
+                Invoke(nameof(ResetDash), dashCooldown);
+                Invoke(nameof(ResetSpeedControl), 0.5f);
+            }
+        }
+
+        private void RotationCam()
+        {
+            _camRotation = _playerCamera.transform.rotation;
+            _camRotation.eulerAngles = new Vector3(0f, _camRotation.eulerAngles.y, 0);
+            _rb.rotation = _camRotation;
+
+            _rbRotation = _rb.transform.rotation.eulerAngles;
         }
         
-        private void MovePlayer()
+        private void MovePLayer()
         {
-            _moveDirection = orientation.forward * _vertical + orientation.right * _horizontal;
-            
-            if(_isGrounded) 
-                _rb.AddForce(_moveDirection.normalized * (movementSpeed * 10f), ForceMode.Force);
-            else if(!_isGrounded)
-                _rb.AddForce(_moveDirection.normalized * (movementSpeed * airMultiplier * 10f), ForceMode.Force);
+            _forward = Quaternion.Euler(0f, _rbRotation.y, 0f)*Vector3.forward;
+            _right = Quaternion.Euler(0f, _rbRotation.y, 0f) * Vector3.right;
+
+            _moveDirection = _forward * _vertical + _right * _horizontal;
+
+            _rb.AddForce(_moveDirection.normalized * (movementSpeed * 10f), ForceMode.Force);
         }
 
         private void SpeedControl()
         {
-            Vector3 flatVelocity = new Vector3(_rb.linearVelocity.x, 0, _rb.linearVelocity.z);
-            
-            if(flatVelocity.magnitude > movementSpeed)
+            Vector3 flatVel = new Vector3(_rb.linearVelocity.x, 0f, _rb.linearVelocity.z);
+
+            if (flatVel.magnitude > movementSpeed)
             {
-                Vector3 limitedVelocity = flatVelocity.normalized * movementSpeed;
-                _rb.linearVelocity = new Vector3(limitedVelocity.x, _rb.linearVelocity.y, limitedVelocity.z);
+                Vector3 limitedVel = flatVel.normalized * movementSpeed;
+                _rb.linearVelocity = new Vector3(limitedVel.x, _rb.linearVelocity.y, limitedVel.z);
             }
+            
         }
+
+        #region Actions
         
         private void Jump()
         {
-            _rb.linearVelocity = new Vector3(_rb.linearVelocity.x, 0, _rb.linearVelocity.z);
+            _rb.linearVelocity = new Vector3(_rb.linearVelocity.x, 0f, _rb.linearVelocity.z);
             _rb.AddForce(transform.up * jumpForce, ForceMode.Impulse);
         }
 
+        private void Dash()
+        {
+            _forward = Quaternion.Euler(0f, _rbRotation.y, 0f) * Vector3.forward;
+            _right = Quaternion.Euler(0f, _rbRotation.y, 0f) * Vector3.right;
+
+            _moveDirection = _forward * _vertical + _right * _horizontal;
+
+            
+            _rb.AddForce(_moveDirection.normalized* dashForce, ForceMode.Impulse);
+        }
+        
+        #endregion
+
+        #region Resets
+        
         private void ResetJump()
         {
             _canJump = true;
         }
-        
-        private void AlignWithCamera()
+
+        private void ResetDash()
         {
-            if (_horizontal != 0 || _vertical != 0)
-            {
-                Vector3 cameraForward = _playerCamera.transform.forward;
-                cameraForward.y = 0; 
-                Quaternion targetRotation = Quaternion.LookRotation(cameraForward);
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 10f);
-            }
+            _canDash = true;
+            
+        }
+
+        private void ResetSpeedControl()
+        {
+            _speedControlActive = true;
         }
         
+        #endregion
+            
         private void OnDrawGizmos()
         {
             Gizmos.color = Color.yellow;
@@ -138,5 +202,6 @@ namespace CharacterMovement
             Gizmos.color = Color.green;
             Gizmos.DrawRay(transform.position, transform.forward * 2);
         }
+    
     }
 }
