@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace CharacterMovement
 {
@@ -52,7 +53,7 @@ namespace CharacterMovement
         private Vector3 _rbRotation;
 
         private Rigidbody _rb;
-
+        
         #endregion
         
         #region Updates & Start
@@ -117,7 +118,7 @@ namespace CharacterMovement
                 Invoke(nameof(ResetSpeedControl), 0.5f);
             }
             
-            if(Input.GetKeyDown(switchWeaponKey))
+            if(Input.GetKeyDown(switchWeaponKey) || Input.mouseScrollDelta.y != 0)
             {
                 if (rifle.activeSelf)
                 {
