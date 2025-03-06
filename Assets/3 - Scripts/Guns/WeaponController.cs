@@ -1,23 +1,34 @@
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 
 public class WeaponController : MonoBehaviour, IDealDamage
 {
-    [Header("Shoot settings")]
-    public Transform firePoint; // Point of origin of the shot
-    public float fireRange = 100f; // Max shot distance
+    #region Variables
+    [Header("Gun Settings")]
     public LayerMask hitMask; // Hit objects
+    public float fireRange = 100f; // Max shot distance
     public float fireRate = 0.2f; // Time between shots
     public int damage = 10; // Damage per shot
-    public KeyCode shootKey = KeyCode.Mouse0;
-    public KeyCode aimKey = KeyCode.Mouse1;
     public float spread = 0.02f; // Backwards force when shooting
     public bool automatic = false;
+    
+    [Header("Ammo settings")]
+    public int magazineSize = 30;
+    public int magazineAmmo = 0;
+    public int currentAmmo = 300;
+    public int maxAmmo = 300;
+    
+    [Header("Keybindings")]
+    public KeyCode shootKey = KeyCode.Mouse0;
+    public KeyCode aimKey = KeyCode.Mouse1;
     
     private Camera mainCamera;
     private bool canShoot = true;
 
+    #endregion
+    
     private void Start()
     {
         mainCamera = Camera.main;
@@ -30,37 +41,39 @@ public class WeaponController : MonoBehaviour, IDealDamage
         
         if (Input.GetKey(shootKey) && Input.GetKey(aimKey) && canShoot && automatic)
         {
+            
             spread = 0f;
             Shoot();
             Invoke(nameof(ResetShoot), fireRate);
+            
         } 
         else if(Input.GetKey(shootKey) && canShoot && automatic)
         {
-            spread = 0.02f;
+            
+            spread = 0f;
             Shoot();
             Invoke(nameof(ResetShoot), fireRate);
+            
         }
         
         //Manual Shooting
         
         if (Input.GetKeyDown(shootKey) && Input.GetKey(aimKey) && canShoot && !automatic)
         {
+            
             spread = 0f;
             Shoot();
             Invoke(nameof(ResetShoot), fireRate);
+            
         } 
         else if(Input.GetKeyDown(shootKey) && canShoot && !automatic)
         {
-            spread = 0.02f;
+            
+            spread = 0f;
             Shoot();
             Invoke(nameof(ResetShoot), fireRate);
+            
         }
-        
-    }
-    
-    public int GetDamage()
-    {
-        return damage;
     }
 
     void Shoot()
@@ -89,15 +102,23 @@ public class WeaponController : MonoBehaviour, IDealDamage
         // Add VFX
     }
 
+    #region Interface & Invoke
+
+    public int GetDamage()
+    {
+        return damage;
+    }
+
     public void ResetShoot()
     {
         canShoot = true;
     }
 
+    #endregion
+
     public void OnDrawGizmos()
     {
-        if (firePoint == null || mainCamera == null) return;
-
+        if (mainCamera == null) return;
         // 1. Simulate shoot from camera to the center of the screen
         Ray ray = new Ray(mainCamera.transform.position, mainCamera.transform.forward);
         Vector3 targetPoint;
