@@ -1,121 +1,129 @@
 using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
+using Random = UnityEngine.Random;
 
 public class WeaponController : MonoBehaviour, IDealDamage
 {
-    #region Variables
     [Header("Gun Settings")]
-    public LayerMask hitMask; // Hit objects
-    public float fireRange = 100f; // Max shot distance
-    public float fireRate = 0.2f; // Time between shots
-    public int damage = 10; // Damage per shot
-    public float spread = 0.02f; // Backwards force when shooting
+    public LayerMask hitMask;
+    public float fireRange = 100f;
+    public float fireRate = 2f;
+    public int damage = 10;
+    public float spread = 0.02f;
     public bool automatic = false;
-    
-    [Header("Ammo settings")]
+
+    [Header("Ammo Settings")]
     public int magazineSize = 30;
     public int magazineAmmo = 0;
     public int currentAmmo = 300;
     public int maxAmmo = 300;
-    
-    [Header("Keybindings")]
-    public KeyCode shootKey = KeyCode.Mouse0;
-    public KeyCode aimKey = KeyCode.Mouse1;
-    
-    private Camera mainCamera;
-    private bool canShoot = true;
+    public float reloadTime = 2f;
 
-    #endregion
+    private Camera mainCamera;
+    private bool canShootBecauseTime = true;
+    private bool shootPressed = false;
+    private bool isReloading = false;
+
+    
     
     private void Start()
     {
         mainCamera = Camera.main;
+        magazineAmmo = magazineSize;
     }
 
-    void Update()
+    private void Update()
     {
         
-        //Automatic shooting
+        if(isReloading) return;
         
-        if (Input.GetKey(shootKey) && Input.GetKey(aimKey) && canShoot && automatic)
+        if (shootPressed && canShootBecauseTime)
         {
-            
-            spread = 0f;
             Shoot();
-            Invoke(nameof(ResetShoot), fireRate);
-            
-        } 
-        else if(Input.GetKey(shootKey) && canShoot && automatic)
-        {
-            
-            spread = 0f;
-            Shoot();
-            Invoke(nameof(ResetShoot), fireRate);
-            
-        }
-        
-        //Manual Shooting
-        
-        if (Input.GetKeyDown(shootKey) && Input.GetKey(aimKey) && canShoot && !automatic)
-        {
-            
-            spread = 0f;
-            Shoot();
-            Invoke(nameof(ResetShoot), fireRate);
-            
-        } 
-        else if(Input.GetKeyDown(shootKey) && canShoot && !automatic)
-        {
-            
-            spread = 0f;
-            Shoot();
-            Invoke(nameof(ResetShoot), fireRate);
-            
+            canShootBecauseTime = false;
+            StartCoroutine(ResetShoot());
         }
     }
 
-    void Shoot()
+    public void SetShootingState(bool isShooting)
     {
+        shootPressed = isShooting;
+    }
+
+    private void Shoot()
+    {
+        if (magazineAmmo <= 0) return;
+
         Ray ray = new Ray(mainCamera.transform.position, mainCamera.transform.forward);
-        
-        Vector3 direction = ray.direction;
-        direction.x += UnityEngine.Random.Range(-spread, spread);
-        direction.y += UnityEngine.Random.Range(-spread, spread);
-        
-        RaycastHit hit;
 
+        Vector3 direction = ray.direction;
+        direction.x += Random.Range(-spread, spread);
+        direction.y += Random.Range(-spread, spread);
+
+        RaycastHit hit;
         if (Physics.Raycast(ray.origin, direction, out hit, fireRange, hitMask))
         {
-            Debug.Log("Impact: " + hit.collider.name);
-
             IDamageable damageable = hit.collider.GetComponent<IDamageable>();
             if (damageable != null)
             {
                 damageable.TakeDamage(GetDamage());
             }
-            
-            //Add sfx
         }
 
-        // Add VFX
+        magazineAmmo--;
     }
 
-    #region Interface & Invoke
+    private IEnumerator ResetShoot()
+    {
+        yield return new WaitForSeconds(1f / fireRate);
+        canShootBecauseTime = true;
+    }
 
     public int GetDamage()
     {
         return damage;
     }
 
-    public void ResetShoot()
+    public void ActivateWeapon(bool active)
     {
-        canShoot = true;
+        gameObject.SetActive(active);
     }
 
-    #endregion
+    public void Reload()
+    {
+        if (isReloading) return;
+        if (currentAmmo <= 0 || magazineAmmo == magazineSize) return;
 
+        StartCoroutine(ReloadCoroutine());
+    }
+    
+    public void AddAmmo(int amount)
+    {
+        currentAmmo = Mathf.Min(currentAmmo + amount, maxAmmo);
+        Debug.Log("Ammo picked up. New ammo amount: " + currentAmmo);
+    }
+    
+    private IEnumerator ReloadCoroutine()
+    {
+        isReloading = true;
+        Debug.Log("Reloading...");
+
+        yield return new WaitForSeconds(reloadTime);
+
+        int ammoNeeded = magazineSize - magazineAmmo;
+        int ammoToReload = Mathf.Min(ammoNeeded, currentAmmo);
+
+        magazineAmmo += ammoToReload;
+        currentAmmo -= ammoToReload;
+
+        isReloading = false;
+
+        Debug.Log("Reload complete. Ammo left: " + currentAmmo);
+    }
+    
     public void OnDrawGizmos()
     {
         if (mainCamera == null) return;

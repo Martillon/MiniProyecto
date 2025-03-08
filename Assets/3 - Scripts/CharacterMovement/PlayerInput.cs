@@ -30,11 +30,11 @@ namespace CharacterMovement
         [SerializeField] private float playerHeight;
         [SerializeField] private LayerMask groundMask;
         private bool _isGrounded;
-        
-        [Header("Weapons")]
-        [SerializeField] private GameObject rifle;
-        [SerializeField] private GameObject handgun;
+
+        [Header("Weapons")] 
+        [SerializeField] private WeaponManager weaponManager;
         [SerializeField] private KeyCode switchWeaponKey = KeyCode.Q;
+        [SerializeField] private KeyCode reloadKey = KeyCode.R;
         
         [SerializeField] private Transform orientation;
         
@@ -65,12 +65,14 @@ namespace CharacterMovement
             Cursor.visible = false;
             _rb = GetComponent<Rigidbody>();
             _rb.freezeRotation = true;
+            weaponManager = GetComponent<WeaponManager>();
         }
         
         private void Update()
         {
             _isGrounded = Physics.Raycast(transform.position, Vector3.down, playerHeight * 0.5f + 0.2f, groundMask);
             MyInput();
+            WeaponInput();
             RotationCam();
             if (_speedControlActive) SpeedControl();
             
@@ -117,19 +119,38 @@ namespace CharacterMovement
                 Invoke(nameof(ResetDash), dashCooldown);
                 Invoke(nameof(ResetSpeedControl), 0.5f);
             }
-            
-            if(Input.GetKeyDown(switchWeaponKey) || Input.mouseScrollDelta.y != 0)
+        }
+
+        private void WeaponInput()
+        {
+
+            if (weaponManager != null)
             {
-                if (rifle.activeSelf)
+                // Auto or manual shooting
+                if (Input.GetKey(KeyCode.Mouse0))
                 {
-                    rifle.SetActive(false);
-                    handgun.SetActive(true);
+                    weaponManager.SetShootingState(true);
                 }
-                else
+                else if (Input.GetKeyUp(KeyCode.Mouse0))
                 {
-                    rifle.SetActive(true);
-                    handgun.SetActive(false);
+                    weaponManager.SetShootingState(false);
                 }
+
+                // Change weapon
+                if (Input.GetKeyDown(switchWeaponKey) || Input.mouseScrollDelta.y != 0)
+                {
+                    weaponManager.SwitchWeapon();
+                }
+                
+                // Reload weapon
+                if (Input.GetKeyDown(reloadKey))
+                {
+                    weaponManager.ReloadWeapon();
+                }
+            }
+            else
+            {
+                Debug.LogWarning("No weapon manager found on player");
             }
         }
 
