@@ -48,12 +48,7 @@ public class WeaponController : MonoBehaviour, IDealDamage
         }
     }
 
-    public void SetShootingState(bool isShooting)
-    {
-        shootPressed = isShooting;
-    }
-
-    private void Shoot()
+    public void Shoot()
     {
         if (magazineAmmo <= 0) return;
 
@@ -72,7 +67,7 @@ public class WeaponController : MonoBehaviour, IDealDamage
                 damageable.TakeDamage(GetDamage());
             }
         }
-
+        
         magazineAmmo--;
     }
 
@@ -114,10 +109,9 @@ public class WeaponController : MonoBehaviour, IDealDamage
         yield return new WaitForSeconds(reloadTime);
 
         int ammoNeeded = magazineSize - magazineAmmo;
-        int ammoToReload = Mathf.Min(ammoNeeded, currentAmmo);
 
-        magazineAmmo += ammoToReload;
-        currentAmmo -= ammoToReload;
+        magazineAmmo += ammoNeeded;
+        currentAmmo -= ammoNeeded;
 
         isReloading = false;
 

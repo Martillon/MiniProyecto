@@ -5,11 +5,18 @@ public class PlayerStats : MonoBehaviour, IDamageable, IHeal
     [Header("Player Stats")]
     public int maxHealth = 100;
     
+    [Header("Audio")]
+    AudioSource audioSource;
+    public AudioClip healSound;
+    public AudioClip deathSound;
+    public AudioClip damageSound;
+    
     private int currentHealth;
     
     private void Start()
     {
         currentHealth = maxHealth;
+        audioSource = GetComponent<AudioSource>();
     }
     
     public void TakeDamage(int damage)
@@ -33,11 +40,20 @@ public class PlayerStats : MonoBehaviour, IDamageable, IHeal
             currentHealth = maxHealth; //Optional: Lower the health to maxHealth if it goes over progressively
         }
         
+        PlaySound(healSound);
+        
         Debug.Log(gameObject.name + " got healed " + healAmount + ". Health left: " + currentHealth);
     }
     
     private void Die()
     {
         Debug.Log(gameObject.name + " died");
+    }
+    
+    private void PlaySound(AudioClip clip)
+    {
+        audioSource.clip = clip;
+        audioSource.volume = 0.5f;
+        audioSource.Play();
     }
 }

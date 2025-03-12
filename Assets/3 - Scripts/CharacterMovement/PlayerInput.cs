@@ -3,7 +3,7 @@ using UnityEngine.InputSystem;
 
 namespace CharacterMovement
 {
-    [RequireComponent(typeof(Rigidbody))]
+    [RequireComponent(typeof(Rigidbody), typeof(AudioSource))]
     public class PlayerInput : MonoBehaviour
     {
         #region Variables
@@ -38,6 +38,11 @@ namespace CharacterMovement
         
         [SerializeField] private Transform orientation;
         
+        [Header("Audio")]
+        private AudioSource audioSource;
+        public AudioClip jumpSound;
+        public AudioClip dashSound;
+        
         private Camera _playerCamera;
 
         private float _horizontal;
@@ -66,6 +71,7 @@ namespace CharacterMovement
             _rb = GetComponent<Rigidbody>();
             _rb.freezeRotation = true;
             weaponManager = GetComponent<WeaponManager>();
+            audioSource = GetComponent<AudioSource>();
         }
         
         private void Update()
@@ -126,12 +132,18 @@ namespace CharacterMovement
 
             if (weaponManager != null)
             {
-                // Auto or manual shooting
-                if (Input.GetKey(KeyCode.Mouse0))
+                // Booth shoot
+                if (Input.GetKeyDown(KeyCode.Mouse0)) // First one
                 {
                     weaponManager.SetShootingState(true);
                 }
-                else if (Input.GetKeyUp(KeyCode.Mouse0))
+
+                // If automatic, keep shooting
+                if (Input.GetKey(KeyCode.Mouse0) && weaponManager.GetCurrentWeapon())
+                {
+                    weaponManager.SetShootingState(true);
+                }
+                else
                 {
                     weaponManager.SetShootingState(false);
                 }
@@ -189,12 +201,17 @@ namespace CharacterMovement
         
         private void Jump()
         {
+            audioSource.volume = 1f;
+            audioSource.PlayOneShot(jumpSound);
             _rb.linearVelocity = new Vector3(_rb.linearVelocity.x, 0f, _rb.linearVelocity.z);
             _rb.AddForce(transform.up * jumpForce, ForceMode.Impulse);
         }
 
         private void Dash()
         {
+            audioSource.volume = 1f;
+            audioSource.PlayOneShot(dashSound);
+            
             _forward = Quaternion.Euler(0f, _rbRotation.y, 0f) * Vector3.forward;
             _right = Quaternion.Euler(0f, _rbRotation.y, 0f) * Vector3.right;
 
