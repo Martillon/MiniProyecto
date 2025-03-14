@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.UI;
@@ -18,7 +19,7 @@ public class Settings : MonoBehaviour
     public string sfxVolumeParameter = "SFXVolume";
     
     [Header("Video")]
-    public Dropdown resolutionDropdown;
+    public TMP_Dropdown resolutionDropdown;
     public Toggle fullscreenToggle;
 
     private Resolution[] resolutions;
