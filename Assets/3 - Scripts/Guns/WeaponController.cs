@@ -1,8 +1,10 @@
 using System;
 using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
+using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
 public class WeaponController : MonoBehaviour, IDealDamage
@@ -21,6 +23,12 @@ public class WeaponController : MonoBehaviour, IDealDamage
     public int currentAmmo = 300;
     public int maxAmmo = 300;
     public float reloadTime = 2f;
+    
+    [Header("UI Settings")]
+    public Sprite gunImage;
+    public string gunName = "Unknown Gun";
+    private string currentAmmoText;
+    private string maxAmmoText;
 
     private Camera mainCamera;
     private bool canShootBecauseTime = true;
@@ -68,6 +76,7 @@ public class WeaponController : MonoBehaviour, IDealDamage
             }
         }
         
+        HUDManager.singleton.UpdateAmmoBar(currentAmmo, magazineSize);
         magazineAmmo--;
     }
 
@@ -115,6 +124,7 @@ public class WeaponController : MonoBehaviour, IDealDamage
 
         isReloading = false;
 
+        HUDManager.singleton.UpdateAmmoBar(currentAmmo, magazineSize);
         Debug.Log("Reload complete. Ammo left: " + currentAmmo);
     }
     

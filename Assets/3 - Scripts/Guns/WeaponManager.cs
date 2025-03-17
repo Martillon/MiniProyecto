@@ -51,6 +51,7 @@ public class WeaponManager : MonoBehaviour
         }
 
         EquipWeapon(currentWeaponIndex);
+        HUDManager.singleton.UpdateWeaponImage(currentWeapon.gunImage, currentWeapon.gunName);
     }
 
     public bool GetCurrentWeapon()

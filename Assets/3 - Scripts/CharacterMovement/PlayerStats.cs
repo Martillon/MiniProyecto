@@ -22,7 +22,7 @@ public class PlayerStats : MonoBehaviour, IDamageable, IHeal
     public void TakeDamage(int damage)
     {
         currentHealth -= damage;
-        HUDManager.instance.UpdateHealthBar(currentHealth, maxHealth);
+        HUDManager.singleton.UpdateHealthBar(currentHealth, maxHealth);
         
         Debug.Log(gameObject.name + " got damaged " + damage + ". Health left: " + currentHealth);
         
@@ -42,7 +42,7 @@ public class PlayerStats : MonoBehaviour, IDamageable, IHeal
         }
         
         PlaySound(healSound);
-        HUDManager.instance.UpdateHealthBar(currentHealth, maxHealth);
+        HUDManager.singleton.UpdateHealthBar(currentHealth, maxHealth);
         
         Debug.Log(gameObject.name + " got healed " + healAmount + ". Health left: " + currentHealth);
     }

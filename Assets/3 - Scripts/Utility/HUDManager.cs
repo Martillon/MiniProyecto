@@ -1,27 +1,28 @@
 using System;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class HUDManager : MonoBehaviour
 {
-    public static HUDManager instance;
+    public static HUDManager singleton;
     
     [Header("Healthbar")]
     public Slider healthbar;
-    public Text healthText;
+    public TMP_Text healthText;
     
     [Header("Ammo")]
-    public Text ammoText;
+    public TMP_Text ammoText;
     
     [Header("Weapon")]
     public Image weaponImage;
-    public Text weaponName;
+    public TMP_Text weaponName;
 
     private void Awake()
     {
-        if(instance == null)
+        if(singleton == null)
         {
-            instance = this;
+            singleton = this;
         }
         else
         {
