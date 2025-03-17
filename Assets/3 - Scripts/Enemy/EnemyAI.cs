@@ -1,31 +1,53 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 
 public class EnemyAI : MonoBehaviour
 {
+    #region Variables
+    
     [Header("Enemy Settings")]
-    public NavMeshAgent agent;
     public Transform player;
     public LayerMask whatIsGround, whatIsPlayer;
+    public bool isRanged;
+    public float stoppingDistance = 2f;
+    public bool canAttack = true;
+    public bool isAttacking = false;
     
     [Header("Patrol Settings")]
     public Vector3 walkPoint;
     public bool walkPointSet;
     public float walkPointRange;
     
-    [Header("Attack Settings")]
-    public float timeBetweenAttacks;
-    public int damage;
-    private bool _alreadyAttacked;
+    [Header("Melee Attack Settings")]
+    public float meleeAttackCooldown = 1f;
+    public int meleeDamage = 10;
+    
+    [Header("Ranged Attack Settings")]
+    public float rangedAttackCooldown = 1f;
+    public int rangedDamage = 5;
+    public float fireRange = 15f;
+    public float accuracy = 0.1f;
+    public LayerMask obstacleMask;
     
     [Header("State Settings")]
     public float sightRange, attackRange;
     public bool playerInSightRange, playerInAttackRange;
     
+    [Header("Animator Settings")]
+    public string shootAnimation = "Shoot";
+    public string meleeAnimation = "Melee";
+    
+    private Animator animator;
+    private NavMeshAgent agent;
+    
+    #endregion
+    
     private void Awake()
     {
         player = GameObject.Find("Player").transform;
         agent = GetComponent<NavMeshAgent>();
+        animator = GetComponent<Animator>();
     }
     
     private void Update()
@@ -70,38 +92,79 @@ public class EnemyAI : MonoBehaviour
     
     private void AttackPlayer()
     {
-        agent.SetDestination(transform.position);
+        Debug.Log("Attack Player");
         
-        transform.LookAt(player);
-        
-        if (!_alreadyAttacked)
+        transform.LookAt(player.position);
+
+        if (canAttack)
         {
-            Debug.Log("Attacked");
-            // Attack code here
-            // Play attack animation
-            // Play attack sound
-            // Deal damage
+            StartCoroutine(isRanged ? RangedAttack() : MeleeAttack());
+        }
+    }
+
+    private IEnumerator MeleeAttack()
+    {
+        isAttacking = true;
+        canAttack = false;
+
+        if (animator != null)
+        {
+            animator.SetTrigger(meleeAnimation);
+        }
+
+        if (Vector3.Distance(transform.position, player.position) <= stoppingDistance)
+        {
             IDamageable damageable = player.GetComponent<IDamageable>();
-        
             if (damageable != null)
             {
                 damageable.TakeDamage(GetDamage());
             }
-            
-            _alreadyAttacked = true;
-            
-            Invoke(nameof(ResetAttack), timeBetweenAttacks);
         }
+        
+        yield return new WaitForSeconds(meleeAttackCooldown);
+        canAttack = true;
+        isAttacking = false;
+    }
+
+    private IEnumerator RangedAttack()
+    {
+        isAttacking = true;
+        canAttack = false;
+
+        if (animator != null)
+        {
+            animator.SetTrigger(shootAnimation);
+        }
+
+        yield return new WaitForSeconds(0.2f);
+
+        Vector3 direction = (player.position - transform.position).normalized;
+
+        // Disperse the direction
+        direction.x += Random.Range(-accuracy, accuracy);
+        direction.y += Random.Range(-accuracy, accuracy);
+
+        if (Physics.Raycast(transform.position, direction, out RaycastHit hit, fireRange, whatIsPlayer))
+        {
+            if (hit.collider.CompareTag("Player"))
+            {
+                IDamageable damageable = hit.collider.GetComponent<IDamageable>();
+                if (damageable != null)
+                {
+                    damageable.TakeDamage(GetDamage());
+                }
+            }
+        }
+
+        yield return new WaitForSeconds(rangedAttackCooldown);
+        canAttack = true;
+        isAttacking = false;
     }
 
     public int GetDamage()
     {
-        return damage;
-    }
-    
-    private void ResetAttack()
-    {
-        _alreadyAttacked = false;
+        if(isRanged) return rangedDamage;
+        return meleeDamage;
     }
     
     private void OnDrawGizmosSelected()
