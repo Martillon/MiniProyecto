@@ -12,7 +12,7 @@ public class EnemyAI : MonoBehaviour
     public bool isRanged;
     public float stoppingDistance = 2f;
     public bool canAttack = true;
-    public bool isAttacking = false;
+    public bool isAttacking;
     
     [Header("Patrol Settings")]
     public Vector3 walkPoint;
@@ -28,7 +28,6 @@ public class EnemyAI : MonoBehaviour
     public int rangedDamage = 5;
     public float fireRange = 15f;
     public float accuracy = 0.1f;
-    public LayerMask obstacleMask;
     
     [Header("State Settings")]
     public float sightRange, attackRange;
@@ -38,7 +37,7 @@ public class EnemyAI : MonoBehaviour
     public string shootAnimation = "Shoot";
     public string meleeAnimation = "Melee";
     
-    private Animator animator;
+    private Animator _animator;
     private NavMeshAgent agent;
     
     #endregion
@@ -47,7 +46,7 @@ public class EnemyAI : MonoBehaviour
     {
         player = GameObject.Find("Player").transform;
         agent = GetComponent<NavMeshAgent>();
-        animator = GetComponent<Animator>();
+        _animator = GetComponent<Animator>();
     }
     
     private void Update()
@@ -107,9 +106,9 @@ public class EnemyAI : MonoBehaviour
         isAttacking = true;
         canAttack = false;
 
-        if (animator != null)
+        if (_animator != null)
         {
-            animator.SetTrigger(meleeAnimation);
+            _animator.SetTrigger(meleeAnimation);
         }
 
         if (Vector3.Distance(transform.position, player.position) <= stoppingDistance)
@@ -131,9 +130,9 @@ public class EnemyAI : MonoBehaviour
         isAttacking = true;
         canAttack = false;
 
-        if (animator != null)
+        if (_animator != null)
         {
-            animator.SetTrigger(shootAnimation);
+            _animator.SetTrigger(shootAnimation);
         }
 
         yield return new WaitForSeconds(0.2f);
@@ -161,7 +160,7 @@ public class EnemyAI : MonoBehaviour
         isAttacking = false;
     }
 
-    public int GetDamage()
+    private int GetDamage()
     {
         if(isRanged) return rangedDamage;
         return meleeDamage;

@@ -17,6 +17,7 @@ public class PlayerStats : MonoBehaviour, IDamageable, IHeal
     {
         currentHealth = maxHealth;
         audioSource = GetComponent<AudioSource>();
+        HUDManager.singleton.UpdateHealthBar(currentHealth, maxHealth);
     }
     
     public void TakeDamage(int damage)

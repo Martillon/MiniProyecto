@@ -41,6 +41,7 @@ public class WeaponController : MonoBehaviour, IDealDamage
     {
         mainCamera = Camera.main;
         magazineAmmo = magazineSize;
+        HUDManager.singleton.UpdateAmmoBar(magazineAmmo, currentAmmo);
     }
 
     private void Update()
@@ -75,9 +76,9 @@ public class WeaponController : MonoBehaviour, IDealDamage
                 damageable.TakeDamage(GetDamage());
             }
         }
-        
-        HUDManager.singleton.UpdateAmmoBar(currentAmmo, magazineSize);
         magazineAmmo--;
+        
+        HUDManager.singleton.UpdateAmmoBar(magazineAmmo, currentAmmo);
     }
 
     private IEnumerator ResetShoot()
@@ -124,7 +125,7 @@ public class WeaponController : MonoBehaviour, IDealDamage
 
         isReloading = false;
 
-        HUDManager.singleton.UpdateAmmoBar(currentAmmo, magazineSize);
+        HUDManager.singleton.UpdateAmmoBar(magazineAmmo, currentAmmo);
         Debug.Log("Reload complete. Ammo left: " + currentAmmo);
     }
     

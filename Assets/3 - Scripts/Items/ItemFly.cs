@@ -19,7 +19,7 @@ public class ItemFly : MonoBehaviour
     private void Update()
     {
         // Rotation
-        transform.Rotate(Vector3.forward, rotationSpeed * Time.deltaTime);
+        transform.Rotate(Vector3.up, rotationSpeed * Time.deltaTime);
 
         // Vertical movement
         float targetY = startPosition.y + Mathf.Sin(Time.time * floatSpeed) * floatHeight;

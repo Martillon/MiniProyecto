@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 8165496969145390763}
   - component: {fileID: 7596980331916556828}
   - component: {fileID: 9029627522104076975}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Enemy
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -96,7 +96,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6393391583227683018}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: ModelRoot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -132,7 +132,7 @@ GameObject:
   - component: {fileID: 2579374317851686852}
   - component: {fileID: 4008478254933104596}
   - component: {fileID: 6207741499479373719}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Enemy
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -180,7 +180,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7d053f9670c2d994a868b8b8136e1df4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  agent: {fileID: 4008478254933104596}
   player: {fileID: 0}
   whatIsGround:
     serializedVersion: 2
@@ -188,15 +187,28 @@ MonoBehaviour:
   whatIsPlayer:
     serializedVersion: 2
     m_Bits: 256
+  isRanged: 0
+  stoppingDistance: 2
+  canAttack: 1
+  isAttacking: 0
   walkPoint: {x: 0, y: 0, z: 0}
   walkPointSet: 0
   walkPointRange: 0
-  timeBetweenAttacks: 3
-  damage: 30
+  meleeAttackCooldown: 1
+  meleeDamage: 10
+  rangedAttackCooldown: 1
+  rangedDamage: 5
+  fireRange: 15
+  accuracy: 0.1
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 0
   sightRange: 10
   attackRange: 3
   playerInSightRange: 0
   playerInAttackRange: 0
+  shootAnimation: Shoot
+  meleeAnimation: Melee
 --- !u!195 &4008478254933104596
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -234,7 +246,7 @@ CapsuleCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
@@ -253,7 +265,7 @@ GameObject:
   - component: {fileID: 8442601544857003655}
   - component: {fileID: 8761914858838422222}
   - component: {fileID: 2153609459957157057}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}

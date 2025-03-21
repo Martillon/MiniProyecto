@@ -11,6 +11,7 @@ public class WeaponManager : MonoBehaviour
     public AudioSource audioSource;
     public AudioClip[] shootClips;
     public AudioClip reloadClip;
+    public AudioClip emptyClip;
     
     private int currentWeaponIndex = 0;
     private WeaponController currentWeapon;
@@ -21,6 +22,7 @@ public class WeaponManager : MonoBehaviour
         InitializeWeapons();
         EquipWeapon(currentWeaponIndex);
         audioSource = GetComponent<AudioSource>();
+        HUDManager.singleton.UpdateWeaponImage(currentWeapon.gunImage, currentWeapon.gunName);
     }
 
     private void InitializeWeapons()
@@ -52,6 +54,7 @@ public class WeaponManager : MonoBehaviour
 
         EquipWeapon(currentWeaponIndex);
         HUDManager.singleton.UpdateWeaponImage(currentWeapon.gunImage, currentWeapon.gunName);
+        HUDManager.singleton.UpdateAmmoBar(currentWeapon.magazineAmmo, currentWeapon.currentAmmo);
     }
 
     public bool GetCurrentWeapon()
@@ -83,9 +86,13 @@ public class WeaponManager : MonoBehaviour
             currentWeapon.Shoot();
 
             // If audioManager plays the shoot audio
-            if (audioSource != null)
+            if (audioSource != null && currentWeapon.magazineAmmo > 0)
             {
                 PlayShootAudio();
+            }
+            else
+            {
+                PlayEmptyAudio();
             }
 
             yield return new WaitForSeconds(1f / currentWeapon.fireRate); // Sync with weapon fire rate
@@ -118,8 +125,17 @@ public class WeaponManager : MonoBehaviour
     {
         Debug.Log("Playing shoot audio");
         audioSource.clip = shootClips[Random.Range(0, shootClips.Length)];
-        audioSource.pitch = Random.Range(0.8f, 1.2f);
-        audioSource.volume = Random.Range(0.8f, 1f);
+        audioSource.pitch = Random.Range(0.4f, 0.6f);
+        audioSource.volume = Random.Range(0.4f, 0.6f);
+        audioSource.PlayOneShot(audioSource.clip);
+    }
+    
+    private void PlayEmptyAudio()
+    {
+        Debug.Log("Playing empty audio");
+        audioSource.clip = emptyClip;
+        audioSource.pitch = Random.Range(0.4f, 0.6f);
+        audioSource.volume = Random.Range(0.4f, 0.6f);
         audioSource.PlayOneShot(audioSource.clip);
     }
 
@@ -127,8 +143,8 @@ public class WeaponManager : MonoBehaviour
     {
         Debug.Log("Playing reload audio");
         audioSource.clip = reloadClip;
-        audioSource.pitch = Random.Range(0.8f, 1.2f);
-        audioSource.volume = Random.Range(0.8f, 1f);
+        audioSource.pitch = Random.Range(0.4f, 0.7f);
+        audioSource.volume = Random.Range(0.4f, 0.7f);
         audioSource.PlayOneShot(audioSource.clip);
     }
 }
