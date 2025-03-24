@@ -1,8 +1,8 @@
 using CharacterMovement;
 using UnityEngine;
+using UnityEngine.Animations.Rigging;
 using UnityEngine.Serialization;
 
-[RequireComponent(typeof(PlayerInput), typeof(Animator))]
 public class PlayerAnimatorScript : MonoBehaviour
 {
     
@@ -10,12 +10,18 @@ public class PlayerAnimatorScript : MonoBehaviour
     public string horizontalAxisAnimator = "Horizontal";
     public string verticalAxisAnimator = "Vertical";
     public string speedAnimator = "Speed";
-
+    
+    [Header("IK settings")]
+    public TwoBoneIKConstraint leftHandIK;
+    public TwoBoneIKConstraint rightHandIK;
+    
     private Animator animator;
+    private RigBuilder rigBuilder;
     
     private void Awake()
     {
-        animator = GetComponentInChildren<Animator>();
+        animator = GetComponent<Animator>();
+        rigBuilder = GetComponent<RigBuilder>();
     }
     
     private void Update()
@@ -25,7 +31,23 @@ public class PlayerAnimatorScript : MonoBehaviour
         animator.SetFloat(verticalAxisAnimator, Input.GetAxis("Vertical"));
     }
     
-    public float GetSpeed()
+    public void AssignIK (RightHandIkTarget rightHandTarget, LeftHandIkTarget leftHandTarget)
+    {
+        if (rightHandTarget != null)
+        {
+            rightHandIK.data.target = rightHandTarget.transform;
+            rightHandIK.weight = 1f;
+        }
+
+        if (leftHandTarget != null)
+        {
+            leftHandIK.data.target = leftHandTarget.transform;
+            leftHandIK.weight = 1f;
+        }
+        rigBuilder.Build();
+    }
+    
+    private float GetSpeed()
     {
         return Mathf.Abs(Input.GetAxis("Horizontal")) + Mathf.Abs(Input.GetAxis("Vertical"));
     }

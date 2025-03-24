@@ -7,6 +7,10 @@ public class WeaponManager : MonoBehaviour
     [Header("Weapons")]
     [SerializeField] private WeaponController[] weapons;
     
+    [Header("IK Settings")]
+    RightHandIkTarget rightHandIkTarget;
+    LeftHandIkTarget leftHandIkTarget;
+    
     [Header("Audio")]
     public AudioSource audioSource;
     public AudioClip[] shootClips;
@@ -16,6 +20,7 @@ public class WeaponManager : MonoBehaviour
     private int currentWeaponIndex = 0;
     private WeaponController currentWeapon;
     private Coroutine shootingCoroutine;
+    private PlayerAnimatorScript playerAnimatorScript;
 
     private void Start()
     {
@@ -23,6 +28,11 @@ public class WeaponManager : MonoBehaviour
         EquipWeapon(currentWeaponIndex);
         audioSource = GetComponent<AudioSource>();
         HUDManager.singleton.UpdateWeaponImage(currentWeapon.gunImage, currentWeapon.gunName);
+        playerAnimatorScript = GetComponentInChildren<PlayerAnimatorScript>();
+        
+        rightHandIkTarget = currentWeapon.GetComponentInChildren<RightHandIkTarget>();
+        leftHandIkTarget = currentWeapon.GetComponentInChildren<LeftHandIkTarget>();
+        playerAnimatorScript.AssignIK(rightHandIkTarget, leftHandIkTarget);
     }
 
     private void InitializeWeapons()
@@ -55,6 +65,10 @@ public class WeaponManager : MonoBehaviour
         EquipWeapon(currentWeaponIndex);
         HUDManager.singleton.UpdateWeaponImage(currentWeapon.gunImage, currentWeapon.gunName);
         HUDManager.singleton.UpdateAmmoBar(currentWeapon.magazineAmmo, currentWeapon.currentAmmo);
+        
+        rightHandIkTarget = currentWeapon.GetComponentInChildren<RightHandIkTarget>();
+        leftHandIkTarget = currentWeapon.GetComponentInChildren<LeftHandIkTarget>();
+        playerAnimatorScript.AssignIK(rightHandIkTarget, leftHandIkTarget);
     }
 
     public bool GetCurrentWeapon()
@@ -64,7 +78,7 @@ public class WeaponManager : MonoBehaviour
 
     public void SetShootingState(bool isShooting)
     {
-        if (currentWeapon != null)
+        if (currentWeapon != null && Time.timeScale > 0)
         {
             if (isShooting && shootingCoroutine == null)
             {
