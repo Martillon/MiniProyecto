@@ -5,24 +5,19 @@ public class TutorialUI : MonoBehaviour
 {
     [Header("UI")]
     public GameObject tutorialUI;
-
-    private bool hasBeenActivated;
+    public bool hasBeenActivated;
     
     public void OnTriggerEnter(Collider other)
     {
-        if (CompareTag("Player"))
-        {
-            if (!hasBeenActivated)
-            {
-                tutorialUI.SetActive(true);
-                hasBeenActivated = true;
-            }
-        }
+        if (!other.CompareTag("Player")) return;
+        if (hasBeenActivated) return;
+        tutorialUI.SetActive(true);
+        hasBeenActivated = true;
     }
     
     public void OnTriggerExit(Collider other)
     {
-        if (CompareTag("Player"))
+        if (other.CompareTag("Player"))
         {
             tutorialUI.SetActive(false);
         }
