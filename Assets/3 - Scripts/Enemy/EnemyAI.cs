@@ -34,8 +34,9 @@ public class EnemyAI : MonoBehaviour
     public bool playerInSightRange, playerInAttackRange;
     
     [Header("Animator Settings")]
-    public string shootAnimation = "Shoot";
-    public string meleeAnimation = "Melee";
+    public string gunAnimatorVariable = "Gun";
+    public string attackAnimatorVariable = "Attack";
+    public string movementAnimatorVariable = "Movement";
     
     private Animator _animator;
     private NavMeshAgent agent;
@@ -46,7 +47,9 @@ public class EnemyAI : MonoBehaviour
     {
         player = GameObject.Find("Player").transform;
         agent = GetComponent<NavMeshAgent>();
-        _animator = GetComponent<Animator>();
+        _animator = GetComponentInChildren<Animator>();
+        
+        
     }
     
     private void Update()
@@ -57,6 +60,19 @@ public class EnemyAI : MonoBehaviour
         if (!playerInSightRange && !playerInAttackRange) Patrol();
         if (playerInSightRange && !playerInAttackRange) ChasePlayer();
         if (playerInSightRange && playerInAttackRange) AttackPlayer();
+        
+        if(_animator != null)
+        {
+            _animator.SetBool(movementAnimatorVariable, agent.velocity.magnitude > 0.1f);
+        }
+    }
+    
+    void LateUpdate()
+    {
+        Vector3 currentRotation = transform.eulerAngles;
+        currentRotation.x = 0f; 
+        currentRotation.z = 0f; 
+        transform.eulerAngles = currentRotation;
     }
     
     private void Patrol()
@@ -67,9 +83,11 @@ public class EnemyAI : MonoBehaviour
             agent.SetDestination(walkPoint);
         
         Vector3 distanceToWalkPoint = transform.position - walkPoint;
-        
+
         if (distanceToWalkPoint.magnitude < 1f)
+        {
             walkPointSet = false;
+        }
     }
     
     private void SearchWalkPoint()
@@ -80,6 +98,7 @@ public class EnemyAI : MonoBehaviour
         walkPoint = new Vector3(transform.position.x + randomX, transform.position.y, transform.position.z + randomZ);
         
         if (Physics.Raycast(walkPoint, -transform.up, 2f, whatIsGround))
+            
             walkPointSet = true;
     }
     
@@ -87,6 +106,7 @@ public class EnemyAI : MonoBehaviour
     {
         Debug.Log("Chase Player");
         agent.SetDestination(player.position);
+        transform.LookAt(player.position);
     }
     
     private void AttackPlayer()
@@ -95,10 +115,14 @@ public class EnemyAI : MonoBehaviour
         
         transform.LookAt(player.position);
 
+        agent.isStopped = true;
+        
         if (canAttack)
         {
             StartCoroutine(isRanged ? RangedAttack() : MeleeAttack());
         }
+        
+        agent.isStopped = false;
     }
 
     private IEnumerator MeleeAttack()
@@ -108,7 +132,7 @@ public class EnemyAI : MonoBehaviour
 
         if (_animator != null)
         {
-            _animator.SetTrigger(meleeAnimation);
+            _animator.SetBool(attackAnimatorVariable, true);
         }
 
         if (Vector3.Distance(transform.position, player.position) <= stoppingDistance)
@@ -123,6 +147,10 @@ public class EnemyAI : MonoBehaviour
         yield return new WaitForSeconds(meleeAttackCooldown);
         canAttack = true;
         isAttacking = false;
+        if (_animator != null)
+        {
+            _animator.SetBool(attackAnimatorVariable, false);
+        }
     }
 
     private IEnumerator RangedAttack()
@@ -132,7 +160,7 @@ public class EnemyAI : MonoBehaviour
 
         if (_animator != null)
         {
-            _animator.SetTrigger(shootAnimation);
+            _animator.SetBool(attackAnimatorVariable, true);
         }
 
         yield return new WaitForSeconds(0.2f);
@@ -158,6 +186,10 @@ public class EnemyAI : MonoBehaviour
         yield return new WaitForSeconds(rangedAttackCooldown);
         canAttack = true;
         isAttacking = false;
+        if (_animator != null)
+        {
+            _animator.SetBool(attackAnimatorVariable, false);
+        }
     }
 
     private int GetDamage()
