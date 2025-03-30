@@ -59,6 +59,8 @@ namespace CharacterMovement
 
         private Rigidbody _rb;
         
+        private PlayerAnimatorScript _playerAnimator;
+        
         #endregion
         
         #region Updates & Start
@@ -72,6 +74,7 @@ namespace CharacterMovement
             _rb.freezeRotation = true;
             weaponManager = GetComponent<WeaponManager>();
             audioSource = GetComponent<AudioSource>();
+            _playerAnimator = GetComponentInChildren<PlayerAnimatorScript>();
         }
         
         private void Update()
@@ -201,6 +204,7 @@ namespace CharacterMovement
         
         private void Jump()
         {
+            _playerAnimator.UpdateJumpAnimator();
             audioSource.volume = 1f;
             audioSource.PlayOneShot(jumpSound);
             _rb.linearVelocity = new Vector3(_rb.linearVelocity.x, 0f, _rb.linearVelocity.z);
@@ -209,6 +213,7 @@ namespace CharacterMovement
 
         private void Dash()
         {
+            _playerAnimator.UpdateDashAnimator();
             audioSource.volume = 1f;
             audioSource.PlayOneShot(dashSound);
             

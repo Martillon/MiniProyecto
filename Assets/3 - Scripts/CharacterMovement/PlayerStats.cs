@@ -11,7 +11,11 @@ public class PlayerStats : MonoBehaviour, IDamageable, IHeal
     public AudioClip deathSound;
     public AudioClip damageSound;
     
+    [Header("UI")]
+    public GameObject deathUI;
+    
     private int currentHealth;
+    private PlayerAnimatorScript animator;
     
     private void Start()
     {
@@ -51,6 +55,10 @@ public class PlayerStats : MonoBehaviour, IDamageable, IHeal
     private void Die()
     {
         Debug.Log(gameObject.name + " died");
+        animator.UpdateDeadAnimator(true);
+        deathUI.SetActive(true);
+        PlaySound(deathSound);
+        Time.timeScale = 0;
     }
     
     private void PlaySound(AudioClip clip)

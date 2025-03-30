@@ -1,6 +1,8 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
+using Random = UnityEngine.Random;
 
 public class EnemyAI : MonoBehaviour
 {
@@ -13,6 +15,7 @@ public class EnemyAI : MonoBehaviour
     public float stoppingDistance = 2f;
     public bool canAttack = true;
     public bool isAttacking;
+    public GameObject[] weapons;
     
     [Header("Patrol Settings")]
     public Vector3 walkPoint;
@@ -41,6 +44,9 @@ public class EnemyAI : MonoBehaviour
     private Animator _animator;
     private NavMeshAgent agent;
     
+    private Vector3 originalWeaponPosition;
+    private Quaternion originalWeaponRotation;
+    
     #endregion
     
     private void Awake()
@@ -51,7 +57,30 @@ public class EnemyAI : MonoBehaviour
         
         
     }
-    
+
+    private void Start()
+    {
+        if (isRanged)
+        {
+            _animator.SetBool(gunAnimatorVariable, true);
+            weapons[0].SetActive(false);
+            weapons[1].SetActive(true);
+        }
+        else if (!isRanged)
+        {
+            _animator.SetBool(gunAnimatorVariable, false);
+            weapons[0].SetActive(true);
+            weapons[1].SetActive(false);
+        }
+        else
+        {
+            Debug.LogWarning("Error while setting up the enemy for weapons. Please check the inspector.");
+        }
+        
+        originalWeaponPosition = weapons[1].transform.localPosition;
+        originalWeaponRotation = weapons[1].transform.localRotation;
+    }
+
     private void Update()
     {
         playerInSightRange = Physics.CheckSphere(transform.position, sightRange, whatIsPlayer);
@@ -73,6 +102,8 @@ public class EnemyAI : MonoBehaviour
         currentRotation.x = 0f; 
         currentRotation.z = 0f; 
         transform.eulerAngles = currentRotation;
+        
+        if (playerInSightRange && !playerInAttackRange) transform.LookAt(player);
     }
     
     private void Patrol()
@@ -97,9 +128,7 @@ public class EnemyAI : MonoBehaviour
         
         walkPoint = new Vector3(transform.position.x + randomX, transform.position.y, transform.position.z + randomZ);
         
-        if (Physics.Raycast(walkPoint, -transform.up, 2f, whatIsGround))
-            
-            walkPointSet = true;
+        if (Physics.Raycast(walkPoint, -transform.up, 2f, whatIsGround)) walkPointSet = true;
     }
     
     private void ChasePlayer()
@@ -107,6 +136,14 @@ public class EnemyAI : MonoBehaviour
         Debug.Log("Chase Player");
         agent.SetDestination(player.position);
         transform.LookAt(player.position);
+        
+        if (isRanged)
+        {
+            _animator.SetBool(attackAnimatorVariable, false);
+            weapons[1].transform.localPosition = originalWeaponPosition;
+            weapons[1].transform.localRotation = originalWeaponRotation;
+        }
+        
     }
     
     private void AttackPlayer()
@@ -116,13 +153,20 @@ public class EnemyAI : MonoBehaviour
         transform.LookAt(player.position);
 
         agent.isStopped = true;
+        agent.velocity = Vector3.zero;
         
         if (canAttack)
         {
             StartCoroutine(isRanged ? RangedAttack() : MeleeAttack());
         }
+
+        if (isRanged)
+        {
+            _animator.SetBool(attackAnimatorVariable, true);
+            weapons[1].transform.localPosition = new Vector3(34, -1, 20);
+            weapons[1].transform.localRotation = Quaternion.Euler(1, -125, 120);
+        }
         
-        agent.isStopped = false;
     }
 
     private IEnumerator MeleeAttack()
@@ -147,21 +191,13 @@ public class EnemyAI : MonoBehaviour
         yield return new WaitForSeconds(meleeAttackCooldown);
         canAttack = true;
         isAttacking = false;
-        if (_animator != null)
-        {
-            _animator.SetBool(attackAnimatorVariable, false);
-        }
+        agent.isStopped = false;
     }
 
     private IEnumerator RangedAttack()
     {
         isAttacking = true;
         canAttack = false;
-
-        if (_animator != null)
-        {
-            _animator.SetBool(attackAnimatorVariable, true);
-        }
 
         yield return new WaitForSeconds(0.2f);
 
@@ -190,6 +226,7 @@ public class EnemyAI : MonoBehaviour
         {
             _animator.SetBool(attackAnimatorVariable, false);
         }
+        agent.isStopped = false;
     }
 
     private int GetDamage()

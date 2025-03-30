@@ -10,6 +10,9 @@ public class PlayerAnimatorScript : MonoBehaviour
     public string horizontalAxisAnimator = "Horizontal";
     public string verticalAxisAnimator = "Vertical";
     public string speedAnimator = "Speed";
+    public string jumpAnimator = "Jump";
+    public string dashAnimator = "Dash";
+    public string deadAnimator = "Dead";
     
     [Header("IK settings")]
     public TwoBoneIKConstraint leftHandIK;
@@ -52,4 +55,18 @@ public class PlayerAnimatorScript : MonoBehaviour
         return Mathf.Abs(Input.GetAxis("Horizontal")) + Mathf.Abs(Input.GetAxis("Vertical"));
     }
     
+    public void UpdateJumpAnimator()
+    {
+        animator.SetTrigger(jumpAnimator);
+    }
+
+    public void UpdateDashAnimator()
+    {
+        animator.SetTrigger(dashAnimator);
+    }
+    
+    public void UpdateDeadAnimator(bool deadValue)
+    {
+        animator.SetBool(deadAnimator, deadValue);
+    }
 }
