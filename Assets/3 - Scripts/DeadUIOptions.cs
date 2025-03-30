@@ -10,11 +10,13 @@ public class DeadUIOptions : MonoBehaviour
 
     public void Restart()
     {
+        UIAudio.Instance.PlayClick();
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
     
     public void MainMenu()
     {
+        UIAudio.Instance.PlayClick();
         SceneManager.LoadScene(mainMenuScene);
     }
 }

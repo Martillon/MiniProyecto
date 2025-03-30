@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class PlayerStats : MonoBehaviour, IDamageable, IHeal
@@ -14,14 +15,22 @@ public class PlayerStats : MonoBehaviour, IDamageable, IHeal
     [Header("UI")]
     public GameObject deathUI;
     
+    [Header("Damage Flash")]
+    [SerializeField] private Renderer characterRenderer;
+    [SerializeField] private Color damageColor = Color.red;
+    [SerializeField] private float flashDuration = 0.2f;
+    private Color originalColor;
+    
     private int currentHealth;
     private PlayerAnimatorScript animator;
     
     private void Start()
     {
+        originalColor = characterRenderer.material.color;
         currentHealth = maxHealth;
         audioSource = GetComponent<AudioSource>();
         HUDManager.singleton.UpdateHealthBar(currentHealth, maxHealth);
+        animator = GetComponentInChildren<PlayerAnimatorScript>();
     }
     
     public void TakeDamage(int damage)
@@ -31,12 +40,23 @@ public class PlayerStats : MonoBehaviour, IDamageable, IHeal
         
         Debug.Log(gameObject.name + " got damaged " + damage + ". Health left: " + currentHealth);
         
+        PlaySound(damageSound);
+        
+        StartCoroutine(FlashDamage());
+        
         if (currentHealth <= 0)
         {
             Die();
         }
     }
-    
+
+    private IEnumerator FlashDamage()
+    {
+        characterRenderer.material.color = damageColor;
+        yield return new WaitForSeconds(flashDuration);
+        characterRenderer.material.color = originalColor;
+    }
+
     public void Heal(int healAmount)
     {
         currentHealth += healAmount;
@@ -58,6 +78,8 @@ public class PlayerStats : MonoBehaviour, IDamageable, IHeal
         animator.UpdateDeadAnimator(true);
         deathUI.SetActive(true);
         PlaySound(deathSound);
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
         Time.timeScale = 0;
     }
     

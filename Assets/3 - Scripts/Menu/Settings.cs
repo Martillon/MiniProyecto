@@ -96,11 +96,13 @@ public class Settings : MonoBehaviour
 
     void SetResolution(int index)
     {
+        UIAudio.Instance.PlayClick();
         Screen.SetResolution(resolutions[index].width, resolutions[index].height, Screen.fullScreen);
         PlayerPrefs.SetInt("Resolution", index);
     }
     void SetFullscreen(bool isFullscreen)
     {
+        UIAudio.Instance.PlayClick();
         Screen.fullScreen = isFullscreen;
         PlayerPrefs.SetInt("Fullscreen", isFullscreen ? 1 : 0);
     }

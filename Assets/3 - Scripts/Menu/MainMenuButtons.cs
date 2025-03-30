@@ -25,18 +25,21 @@ public class MainMenuButtons : MonoBehaviour
     
     public void OptionsButton()
     {
+        UIAudio.Instance.PlayClick();
         mainMenu.SetActive(false);
         optionsMenu.SetActive(true);
     }
     
     public void BackButton()
     {
+        UIAudio.Instance.PlayClick();
         mainMenu.SetActive(true);
         optionsMenu.SetActive(false);
     }
     
     public void ExitButton()
     {
+        UIAudio.Instance.PlayClick();
         #if UNITY_EDITOR
                 UnityEditor.EditorApplication.isPlaying = false;
         #else

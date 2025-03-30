@@ -42,12 +42,16 @@ public class PauseUI : MonoBehaviour
     
     public void ResumeButton()
     {
+        UIAudio.Instance.PlayClick();
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
         Time.timeScale = 1;
         pauseCanvas.SetActive(false);
     }
     
     public void BackToMenuButton()
     {
+        UIAudio.Instance.PlayClick();
         Time.timeScale = 1;
         SceneManager.LoadScene(mainMenuScene);
     }

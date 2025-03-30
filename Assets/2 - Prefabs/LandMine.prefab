@@ -105,6 +105,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   damage: 10
   explosionRadius: 5
+  explosionEffect: {fileID: 4306090262564556866, guid: 49941b5f911dff144ae1ab6548135941, type: 3}
 --- !u!65 &7429163450723095369
 BoxCollider:
   m_ObjectHideFlags: 0

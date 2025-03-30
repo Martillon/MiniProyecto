@@ -41,6 +41,11 @@ public class EnemyAI : MonoBehaviour
     public string attackAnimatorVariable = "Attack";
     public string movementAnimatorVariable = "Movement";
     
+    [Header("Audio")]
+    public AudioClip attackSoundRange;
+    public AudioClip attackSoundMelee;
+    private AudioSource audioSource;
+    
     private Animator _animator;
     private NavMeshAgent agent;
     
@@ -54,8 +59,7 @@ public class EnemyAI : MonoBehaviour
         player = GameObject.Find("Player").transform;
         agent = GetComponent<NavMeshAgent>();
         _animator = GetComponentInChildren<Animator>();
-        
-        
+        audioSource = GetComponent<AudioSource>();
     }
 
     private void Start()
@@ -178,7 +182,9 @@ public class EnemyAI : MonoBehaviour
         {
             _animator.SetBool(attackAnimatorVariable, true);
         }
-
+        
+        PlaySound(attackSoundMelee);
+        
         if (Vector3.Distance(transform.position, player.position) <= stoppingDistance)
         {
             IDamageable damageable = player.GetComponent<IDamageable>();
@@ -206,6 +212,8 @@ public class EnemyAI : MonoBehaviour
         // Disperse the direction
         direction.x += Random.Range(-accuracy, accuracy);
         direction.y += Random.Range(-accuracy, accuracy);
+        
+        PlaySound(attackSoundRange);
 
         if (Physics.Raycast(transform.position, direction, out RaycastHit hit, fireRange, whatIsPlayer))
         {
@@ -233,6 +241,14 @@ public class EnemyAI : MonoBehaviour
     {
         if(isRanged) return rangedDamage;
         return meleeDamage;
+    }
+
+    private void PlaySound(AudioClip clip)
+    {
+        audioSource.clip = clip;
+        audioSource.pitch = Random.Range(0.8f, 1.2f);
+        audioSource.volume = Random.Range(0.1f, 0.3f);
+        audioSource.PlayOneShot(audioSource.clip);
     }
     
     private void OnDrawGizmosSelected()

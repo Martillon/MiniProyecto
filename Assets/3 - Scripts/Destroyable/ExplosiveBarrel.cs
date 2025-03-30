@@ -8,6 +8,7 @@ public class ExplosiveBarrel : MonoBehaviour, IDamageable , IDealDamage
     [SerializeField] private int maxHealth = 100;
     [SerializeField] private int explosionDamage = 100;
     [SerializeField] private float explosionRadius = 5f;
+    [SerializeField] private GameObject explosionEffect;
     
     private int currentHealth;
     private bool hasExploded = false;
@@ -52,6 +53,8 @@ public class ExplosiveBarrel : MonoBehaviour, IDamageable , IDealDamage
                 damageable.TakeDamage(GetDamage());
             }
         }
+
+        Instantiate(explosionEffect, transform.position, Quaternion.identity);
         
         Destroy(gameObject);
     }

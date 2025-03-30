@@ -10,6 +10,8 @@ public class ColliderWaveCombat : MonoBehaviour
     [Header("GameObject Settings")]
     public GameObject colliderToEnable;
     public WaveManager waveManager;
+    
+    private bool firstTime = false;
 
     public void Start()
     {
@@ -18,12 +20,16 @@ public class ColliderWaveCombat : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player"))
+        if (other.CompareTag("Player") && firstTime == false)
         {
-            waveUI.SetActive(true);
-            previousUI.SetActive(false);
+            if (waveUI != null && previousUI != null)
+            {
+                waveUI.SetActive(true);
+                previousUI.SetActive(false);
+            }
             colliderToEnable.SetActive(true);
             waveManager.StartCombat();
+            firstTime = true;
         }
     }
     

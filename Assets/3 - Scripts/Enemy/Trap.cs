@@ -7,6 +7,7 @@ public class Trap : MonoBehaviour, IDealDamage
     public int damage = 10;
     public float explosionRadius = 3f;
     private bool hasExploded = false;
+    public GameObject explosionEffect;
     
 
     public int GetDamage()
@@ -36,6 +37,8 @@ public class Trap : MonoBehaviour, IDealDamage
                 damageable.TakeDamage(GetDamage());
             }
         }
+        
+        Instantiate(explosionEffect, transform.position, Quaternion.identity);
         
         Destroy(gameObject);
     }
